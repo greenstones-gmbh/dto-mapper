@@ -32,4 +32,11 @@
 		</dependency>
 
 	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/greenstones-gmbh/dto-mapper</url>
+		</repository>
+	</distributionManagement>
 </project>
