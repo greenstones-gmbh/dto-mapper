@@ -6,6 +6,7 @@
 	<artifactId>dto-mapper</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>dto-mapper</name>
+	<packaging>jar</packaging>
 
 	<properties>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -62,4 +63,18 @@
 			<url>https://maven.pkg.github.com/greenstones-gmbh/dto-mapper</url>
 		</repository>
 	</distributionManagement>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.2</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.22.2</version>
+			</plugin>
+		</plugins>
+	</build>
 </project>

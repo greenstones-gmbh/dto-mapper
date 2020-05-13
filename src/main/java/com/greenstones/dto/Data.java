@@ -7,8 +7,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import lombok.ToString;
-
 public class Data implements Serializable {
 
 	private static final long serialVersionUID = 1523786861294458406L;
