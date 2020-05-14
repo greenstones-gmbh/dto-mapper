@@ -1,5 +1,8 @@
 # DTO Mapper
 
+![Java CI with Maven](https://github.com/greenstones-gmbh/dto-mapper/workflows/Java%20CI%20with%20Maven/badge.svg)
+![Maven Package](https://github.com/greenstones-gmbh/dto-mapper/workflows/Maven%20Package/badge.svg)
+
 DTO Mapper is an intelligent way to expose domain model objects via REST API without DTOs. You can include, exclude or transform attributes using a fluent-style API.  
 
 ## Features
