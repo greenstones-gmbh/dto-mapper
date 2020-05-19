@@ -1,7 +1,9 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import com.greenstones.dto.data.Data;
 
 public class DataMapper<E> extends AbstractMapper<Data, E> {
 

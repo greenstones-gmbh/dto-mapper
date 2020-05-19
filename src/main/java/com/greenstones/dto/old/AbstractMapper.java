@@ -1,4 +1,4 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.greenstones.dto.n;
+package com.greenstones.dto;
 
 public interface Target<E> {
 	void set(String prop, Object v);

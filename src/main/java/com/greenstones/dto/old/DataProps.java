@@ -1,4 +1,4 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeanWrapperImpl;
+
+import com.greenstones.dto.data.Data;
 
 public class DataProps {
 

@@ -1,5 +1,5 @@
 
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -7,6 +7,11 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.greenstones.dto.Department;
+import com.greenstones.dto.Employee;
+import com.greenstones.dto.data.Data;
+import com.greenstones.dto.old.Mapper;
 
 public class NextTests {
 

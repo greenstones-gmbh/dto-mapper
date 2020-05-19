@@ -1,4 +1,4 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 @FunctionalInterface
 public interface Reducer<I, O> {

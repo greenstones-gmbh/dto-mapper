@@ -1,98 +1,74 @@
 package com.greenstones.dto;
 
 import java.util.Arrays;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.List;
 import java.util.stream.StreamSupport;
 
-import org.springframework.beans.BeanWrapperImpl;
+import com.greenstones.dto.PropertyMapping.SinglePropertySelector;
 
 public class Props {
 
-	public static <E> Reducer<E, Data> copy(String... props) {
-		return (data, e) -> {
-			BeanWrapperImpl bw = new BeanWrapperImpl(e);
-			Arrays.asList(props).forEach(prop -> {
-				data.put(prop, bw.getPropertyValue(prop));
-			});
-			return data;
-		};
-	}
+	public static <I, O, IP, OP> Mapping<I, O> copy(PropertySelector<IP, OP> propSelector) {
 
-	public static <E> Reducer<E, Data> copyTo(String prop, String toProp) {
-		return (data, e) -> {
-			BeanWrapperImpl bw = new BeanWrapperImpl(e);
-			Object v = bw.getPropertyValue(prop);
-			data.put(toProp, v);
-			return data;
-		};
-	}
+		Mapping<I, O> consumer = (source, target) ->
 
-	public static <E> Reducer<E, Data> copyAll() {
-		return (data, e) -> {
-			BeanWrapperImpl bw = new BeanWrapperImpl(e);
-			Arrays
-					.asList(bw.getPropertyDescriptors())
-						.stream()
-						.map(pd -> pd.getName())
-						.filter(prop -> !"class".equals(prop))
-						.forEach(prop -> {
-							data.put(prop, bw.getPropertyValue(prop));
-						});
+		propSelector.select(source, target).forEach(prop -> {
+			Object in = source.get(prop.from);
 
-			return data;
-		};
-	}
-
-	public static <E> Reducer<E, Data> exclude(String... props) {
-		return (data, e) -> {
-			Arrays.asList(props).forEach(prop -> {
-				data.remove(prop);
-			});
-
-			return data;
-		};
-	}
-
-	public static <E> Reducer<E, Data> add(String name, Function<E, Object> transform) {
-		return (data, e) -> {
-			data.put(name, transform.apply(e));
-			return data;
-		};
-	}
-
-	public static <E, T> Reducer<E, Data> copy(String prop, Function<T, Object> transform) {
-		return (data, e) -> {
-			BeanWrapperImpl bw = new BeanWrapperImpl(e);
-			@SuppressWarnings("unchecked")
-			T v = (T) bw.getPropertyValue(prop);
-			data.put(prop, transform.apply(v));
-			return data;
-		};
-	}
-
-	public static <E, T> Reducer<E, Data> copy(String prop, Mapper<T> builder) {
-		return (data, e) -> {
-			BeanWrapperImpl bw = new BeanWrapperImpl(e);
-
-			Object ov = bw.getPropertyValue(prop);
-			if (ov instanceof Iterable) {
+			if (in instanceof Iterable<?>) {
 				@SuppressWarnings("unchecked")
-				Iterable<T> iterable = (Iterable<T>) ov;
-				data
-						.put(prop,
+				Iterable<IP> iterable = (Iterable<IP>) in;
+				target
+						.set(prop.to,
 								StreamSupport
 										.stream(iterable.spliterator(), false)
-											.map(builder::map)
-											.collect(Collectors.toList()));
-
+											.map(i -> prop.transform.apply(i))
+											.collect(prop.collector));
 			} else {
 				@SuppressWarnings("unchecked")
-				T v = (T) ov;
-				data.put(prop, builder.map(v));
+				IP ip = (IP) in;
+				OP op = prop.transform.apply(ip);
+				target.set(prop.to, op);
 			}
-			return data;
-		};
+
+		});
+
+		return consumer;
+	}
+
+	public static PropertySelector<Object, Object> all() {
+
+		PropertySelector<Object, Object> propSelector = (source,
+				target) -> source.getProps().stream().filter(target::accept).map(p -> PropertyMapping.from(p));
+
+		return propSelector;
+
+	}
+
+	public static PropertySelector<Object, Object> except(String... names) {
+		List<String> excludes = Arrays.asList(names);
+		PropertySelector<Object, Object> propSelector = (source, target) -> source
+				.getProps()
+					.stream()
+					.filter(target::accept)
+					.filter(p -> !excludes.contains(p))
+					.map(p -> PropertyMapping.from(p));
+
+		return propSelector;
+
+	}
+
+	public static PropertySelector<Object, Object> props(String... names) {
+		PropertySelector<Object, Object> propSelector = (source,
+				target) -> Arrays.asList(names).stream().map(p -> PropertyMapping.from(p));
+
+		return propSelector;
+
+	}
+
+	public static SinglePropertySelector<Object, Object> prop(String from) {
+		return new PropertyMapping.SinglePropertySelector<>(PropertyMapping.from(from));
+
 	}
 
 }

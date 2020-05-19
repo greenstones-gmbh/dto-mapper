@@ -1,4 +1,4 @@
-package com.greenstones.dto.n;
+package com.greenstones.dto;
 
 import java.util.Set;
 

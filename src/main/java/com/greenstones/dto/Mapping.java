@@ -1,4 +1,4 @@
-package com.greenstones.dto.n;
+package com.greenstones.dto;
 
 @FunctionalInterface
 public interface Mapping<I, O> {

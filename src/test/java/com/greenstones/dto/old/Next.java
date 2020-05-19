@@ -1,4 +1,4 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +13,9 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.BeanWrapperImpl;
 
-import com.greenstones.dto.Data;
-import com.greenstones.dto.Reducer;
+import com.greenstones.dto.Employee;
+import com.greenstones.dto.data.Data;
+import com.greenstones.dto.old.Reducer;
 
 import lombok.AllArgsConstructor;
 

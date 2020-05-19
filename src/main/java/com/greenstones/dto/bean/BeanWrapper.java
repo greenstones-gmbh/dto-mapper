@@ -1,10 +1,13 @@
-package com.greenstones.dto.n;
+package com.greenstones.dto.bean;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanWrapperImpl;
+
+import com.greenstones.dto.Source;
+import com.greenstones.dto.Target;
 
 public class BeanWrapper<E> implements Source<E>, Target<E> {
 

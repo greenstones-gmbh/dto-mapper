@@ -1,8 +1,9 @@
-package com.greenstones.dto.n;
+package com.greenstones.dto.data;
 
 import java.util.Set;
 
-import com.greenstones.dto.Data;
+import com.greenstones.dto.Source;
+import com.greenstones.dto.Target;
 
 public class DataWrapper implements Source<Data>, Target<Data> {
 

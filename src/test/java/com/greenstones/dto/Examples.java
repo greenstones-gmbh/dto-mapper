@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greenstones.dto.data.Data;
+import com.greenstones.dto.old.Mapper;
 
 public class Examples {
 

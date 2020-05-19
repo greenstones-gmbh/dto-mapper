@@ -1,4 +1,4 @@
-package com.greenstones.dto;
+package com.greenstones.dto.old;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +8,11 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import com.greenstones.dto.Department;
+import com.greenstones.dto.Employee;
+import com.greenstones.dto.old.Mapper;
+import com.greenstones.dto.old.Reducer;
 
 import lombok.AllArgsConstructor;
 
