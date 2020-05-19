@@ -9,7 +9,7 @@ import org.springframework.beans.BeanWrapperImpl;
 
 public class Props {
 
-	public static <E> Reducer<E> copy(String... props) {
+	public static <E> Reducer<E, Data> copy(String... props) {
 		return (data, e) -> {
 			BeanWrapperImpl bw = new BeanWrapperImpl(e);
 			Arrays.asList(props).forEach(prop -> {
@@ -19,7 +19,7 @@ public class Props {
 		};
 	}
 
-	public static <E> Reducer<E> copyTo(String prop, String toProp) {
+	public static <E> Reducer<E, Data> copyTo(String prop, String toProp) {
 		return (data, e) -> {
 			BeanWrapperImpl bw = new BeanWrapperImpl(e);
 			Object v = bw.getPropertyValue(prop);
@@ -28,7 +28,7 @@ public class Props {
 		};
 	}
 
-	public static <E> Reducer<E> copyAll() {
+	public static <E> Reducer<E, Data> copyAll() {
 		return (data, e) -> {
 			BeanWrapperImpl bw = new BeanWrapperImpl(e);
 			Arrays
@@ -44,7 +44,7 @@ public class Props {
 		};
 	}
 
-	public static <E> Reducer<E> exclude(String... props) {
+	public static <E> Reducer<E, Data> exclude(String... props) {
 		return (data, e) -> {
 			Arrays.asList(props).forEach(prop -> {
 				data.remove(prop);
@@ -54,14 +54,14 @@ public class Props {
 		};
 	}
 
-	public static <E> Reducer<E> add(String name, Function<E, Object> transform) {
+	public static <E> Reducer<E, Data> add(String name, Function<E, Object> transform) {
 		return (data, e) -> {
 			data.put(name, transform.apply(e));
 			return data;
 		};
 	}
 
-	public static <E, T> Reducer<E> copy(String prop, Function<T, Object> transform) {
+	public static <E, T> Reducer<E, Data> copy(String prop, Function<T, Object> transform) {
 		return (data, e) -> {
 			BeanWrapperImpl bw = new BeanWrapperImpl(e);
 			@SuppressWarnings("unchecked")
@@ -71,7 +71,7 @@ public class Props {
 		};
 	}
 
-	public static <E, T> Reducer<E> copy(String prop, Mapper<T> builder) {
+	public static <E, T> Reducer<E, Data> copy(String prop, Mapper<T> builder) {
 		return (data, e) -> {
 			BeanWrapperImpl bw = new BeanWrapperImpl(e);
 

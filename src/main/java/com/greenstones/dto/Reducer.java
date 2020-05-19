@@ -1,8 +1,6 @@
 package com.greenstones.dto;
 
 @FunctionalInterface
-public interface Reducer<E> {
-
-	Data reduce(Data data, E e);
-	
+public interface Reducer<I, O> {
+	O reduce(O data, I e);
 }
