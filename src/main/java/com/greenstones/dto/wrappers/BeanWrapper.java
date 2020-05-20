@@ -1,4 +1,4 @@
-package com.greenstones.dto.bean;
+package com.greenstones.dto.wrappers;
 
 import java.util.Arrays;
 import java.util.Set;

@@ -146,6 +146,7 @@ public class DataToModelTests {
 				.copy(except("department"))
 					.copy(prop("department").with(d -> {
 						Department dep = new Department();
+						@SuppressWarnings("unchecked")
 						Map<String, Object> dd = (Map<String, Object>) d;
 						dep.setId((String) dd.get("id"));
 						dep.setName((String) dd.get("name"));

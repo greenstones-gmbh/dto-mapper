@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greenstones.dto.simple.SimpleMapper;
+import com.greenstones.dto.fields.SimpleMapper;
 
 public class Examples {
 

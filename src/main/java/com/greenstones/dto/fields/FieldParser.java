@@ -1,4 +1,4 @@
-package com.greenstones.dto.simple;
+package com.greenstones.dto.fields;
 
 import java.util.ArrayList;
 import java.util.Collections;

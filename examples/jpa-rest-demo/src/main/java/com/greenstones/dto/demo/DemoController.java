@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greenstones.dto.Mapper;
-import com.greenstones.dto.simple.SimpleMapper;
+import com.greenstones.dto.fields.SimpleMapper;
 
 @RestController
 @Transactional

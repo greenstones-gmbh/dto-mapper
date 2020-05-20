@@ -1,4 +1,4 @@
-package com.greenstones.dto.simple;
+package com.greenstones.dto.wrappers;
 
 import java.util.Map;
 import java.util.Set;
