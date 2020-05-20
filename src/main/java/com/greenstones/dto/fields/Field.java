@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.greenstones.dto.Mapper;
+import com.greenstones.dto.ModelMapper;
 import com.greenstones.dto.Props;
+import com.greenstones.dto.mappers.Mapper;
 
 public class Field {
 	public String name;
@@ -40,12 +41,12 @@ public class Field {
 
 	}
 
-	public static <I, O> void addMappings(Mapper<I, O> mapper, List<Field> fields) {
+	public static <I, O> void addMappings(ModelMapper<I, O> mapper, List<Field> fields) {
 		fields.forEach(f -> {
 			if (f.fields.isEmpty())
 				mapper.copy(f.name);
 			else {
-				Mapper<Object, Map<String, Object>> m = new Mapper.Simple();
+				ModelMapper<Object, Map<String, Object>> m = new Mapper();
 				addMappings(m, f.fields);
 				mapper.copy(Props.prop(f.name).with(m));
 			}

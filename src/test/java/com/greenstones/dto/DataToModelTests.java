@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import com.greenstones.dto.mappers.MapToModelMapper;
+
 public class DataToModelTests {
 
 	@Test
@@ -27,7 +29,7 @@ public class DataToModelTests {
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class)
 				.copy(props("username", "firstName", "lastName"));
 		Employee emp = mapper.map(data);
 
@@ -37,7 +39,7 @@ public class DataToModelTests {
 		assertThat(emp.getLastName(), is("Rees"));
 		assertThat(emp.getDepartment(), nullValue());
 
-		mapper = new Mapper.MapToModel<>(Employee.class).copy(props("firstName", "lastName"));
+		mapper = new MapToModelMapper<>(Employee.class).copy(props("firstName", "lastName"));
 		emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -57,7 +59,7 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all());
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class).copy(all());
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -76,7 +78,7 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(except("username"));
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class).copy(except("username"));
 
 		Employee emp = mapper.map(data);
 
@@ -94,7 +96,7 @@ public class DataToModelTests {
 		data.put("username", "u1");
 		data.put("fullName", "Adam Rees");
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class)
 				.copy(all())
 					.add("firstName", d -> d.get("fullName").toString().split(" ")[0])
 					.add("lastName", d -> d.get("fullName").toString().split(" ")[1]);
@@ -114,7 +116,7 @@ public class DataToModelTests {
 		data.put("username", "u1");
 		data.put("fullName", "Adam Rees");
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all()).with((d, emp) -> {
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class).copy(all()).with((d, emp) -> {
 			String[] names = d.get("fullName").toString().split(" ");
 			emp.val().setFirstName(names[0]);
 			emp.val().setLastName(names[1]);
@@ -142,7 +144,7 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("department", depData);
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class)
 				.copy(except("department"))
 					.copy(prop("department").with(d -> {
 						Department dep = new Department();
@@ -179,8 +181,8 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("department", depData);
 
-		Mapper.MapToModel<Department> depMapper = new Mapper.MapToModel<>(Department.class).copy(all());
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+		MapToModelMapper<Department> depMapper = new MapToModelMapper<>(Department.class).copy(all());
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class)
 				.copy(except("department"))
 					.copy(prop("department").with(depMapper));
 
@@ -220,8 +222,8 @@ public class DataToModelTests {
 			((ArrayList<Map<String, Object>>) depData.get("employees")).add(data);
 		}
 
-		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all());
-		Mapper.MapToModel<Department> depMapper = new Mapper.MapToModel<>(Department.class)
+		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class).copy(all());
+		MapToModelMapper<Department> depMapper = new MapToModelMapper<>(Department.class)
 				.copy(props("id", "name"))
 					.copy(prop("employees").with(mapper).collector(Collectors.toSet()));
 

@@ -2,6 +2,29 @@
 
 DTO Mapper is an intelligent way to expose domain model objects via REST API without DTOs. You can include, exclude or transform attributes using a fluent-style API.  
 
+```java
+Department dep = new Department();
+Employee emp1 = new Employee();
+..
+emp1.setDepartment(dep);
+
+Mapper mapper = Mapper.from("{username,firstName,lastName,department{id,name}}");
+
+Map<String, Object> data = mapper.map(emp1);
+print(data);
+
+/* Output:
+{
+  "username" : "u1",
+  "firstName" : "Adam",
+  "lastName" : "Rees",
+  "department" : {
+    "name" : "Sales",
+    "id" : "dep1"
+  }
+}
+*/
+
 ## Features
 
 - Map complex domain entities
@@ -15,19 +38,38 @@ DTO Mapper is an intelligent way to expose domain model objects via REST API wit
 Include, exclude, transform or add attributes
 
 ```java
+Department dep = new Department();
+dep.setId("dep1");
+dep.setName("Sales");
+
 Employee emp1 = new Employee();
 emp1.setUsername("u1");
 emp1.setFirstName("Adam");
 emp1.setLastName("Rees");
 emp1.setDepartment(dep);
 
-// Mapper for all properties except 'department' 
-Mapper<Employee> mapper = Mapper.<Employee>allProps().exclude("department");
+// create a generic mapper
+Mapper mapper = Mapper.from("{username,firstName,lastName,department{id,name}}");
 
-// Map an Employee to generic DTO
-Data data = mapper.map(emp1);
+// map an Employee to a map
+Map<String, Object> data = mapper.map(emp1);
+print(data);
 
-// Print as JSON 
+/* Output:
+{
+  "firstName" : "Adam",
+  "lastName" : "Rees",
+  "department" : {
+    "name" : "Sales",
+    "id" : "dep1"
+  },
+  "username" : "u1"
+}
+*/
+
+// create a generic mapper for all properties except 'department'
+mapper = new Mapper().except("department");
+data = mapper.map(emp1);
 print(data);
 
 /* Output:
@@ -39,10 +81,11 @@ print(data);
 */
 
 
-
-// copy only 'username' and add 'fullName' 
-mapper = Mapper.<Employee>props("username").add("fullName", e -> e.getFirstName() + " " + e.getLastName());
-print(mapper.map(emp1));
+// create a typed mapper and copy 'username' and add 'fullName'
+ModelToMapMapper<Employee> entityMapper = new ModelToMapMapper<Employee>()
+	.copy("username")
+	.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
+print(entityMapper.map(emp1));
 
 /* Output:
 {
@@ -74,11 +117,15 @@ emp1.setDepartment(dep);
 // circular dependency
 dep.getEmployees().add(emp1);
 
-Mapper<Department> departmentMapper = Mapper.props("id", "name");
-Mapper<Employee> employeeMapper = Mapper.<Employee>allProps().copy("department",departmentMapper);
+Mapper departmentMapper = Mapper.from("{id,name}");
 
-Data data = employeeMapper.map(emp1);
+ModelToMapMapper<Employee> employeeMapper = new ModelToMapMapper<Employee>()
+	.copyAll()
+	.copy(Props.prop("department").with(departmentMapper));
+
+Map<String, Object> data = employeeMapper.map(emp1);
 print(data);
+
 
 
 /* Output:
@@ -114,12 +161,12 @@ emp1.setDepartment(dep);
 // circular dependency
 dep.getEmployees().add(emp1);
 
-Mapper<Employee> employeeMapper = Mapper.<Employee>props("username","firstName","lastName")
-	.copyTo("department.name","departmentName");
+ModelToMapMapper<Employee> employeeMapper = new ModelToMapMapper<Employee>()
+	.copy("username", "firstName", "lastName")
+	.copy(Props.prop("department.name").to("departmentName"));
 
-Data data = employeeMapper.map(emp1);
+Map<String, Object> data = employeeMapper.map(emp1);
 print(data);
-
 
 /* Output:
 {
@@ -181,11 +228,24 @@ public class DemoController {
 	}
 
 	@GetMapping("/deps_with_mapper")
-	public Stream<Data> departments() {
-		Mapper<Employee> empMapper = Mapper.<Employee>allProps().exclude("department");
-		Mapper<Department> depMapper = Mapper.<Department>allProps().copy("employees", empMapper);
+	public Stream<Map<String, Object>> departments() {
 
-		return depMapper.map(departmentRepository.findAll());
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
+				.with("{id,name, employees{ username, firstName, lastName} }")
+					.copy(prop("employees").to("employeeCount").collector(Collectors.counting()));
+
+		return departmentRepository.findAll().stream().map(departmentMapper::map);
+	}
+
+	@PostMapping("/deps")
+	public Map<String, Object> create_department(@RequestBody Map<String, Object> data) {
+
+		MapToModelMapper<Department> mapToModel = new MapToModelMapper<Department>(Department.class).copyAll();
+
+		Department department = mapToModel.map(data);
+		department=departmentRepository.save(department);
+
+		return Mapper.from("{id,name, employees{ username, firstName, lastName} }").map(department);
 	}
 
 }
@@ -214,8 +274,9 @@ Output `/deps_with_mapper` :
 
 [
   {
-    "name": "Sales",
     "id": "dep1",
+    "name": "Sales",
+    "employeeCount": 2,
     "employees": [
       {
         "firstName": "Adam",
@@ -230,6 +291,7 @@ Output `/deps_with_mapper` :
     ]
   }
 ]
+
 
 ```
 

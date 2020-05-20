@@ -55,7 +55,7 @@ public class PropertyMapping<IP, OP> {
 			return new SinglePropertySelector<>(propMapping.with(transform));
 		}
 
-		public <IP1, OP1> SinglePropertySelector<IP1, OP1> with(Mapper<IP1, OP1> mapper) {
+		public <IP1, OP1> SinglePropertySelector<IP1, OP1> with(ModelMapper<IP1, OP1> mapper) {
 			return with(mapper::map);
 		}
 

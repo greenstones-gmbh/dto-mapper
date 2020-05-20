@@ -11,6 +11,8 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.greenstones.dto.mappers.Mapper;
+
 public class SimpleMapperTests {
 
 	private Department dep;
@@ -42,7 +44,7 @@ public class SimpleMapperTests {
 	@Test
 	void noProps() {
 
-		Mapper.Simple mapper = Mapper.from("{ username, firstName, lastName, department { id, name }}");
+		Mapper mapper = Mapper.from("{ username, firstName, lastName, department { id, name }}");
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());

@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.greenstones.dto.mappers.ModelToMapMapper;
+
 public class ModelToMapTests {
 
 	private Department dep;
@@ -44,7 +46,7 @@ public class ModelToMapTests {
 	@Test
 	void noProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>();
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>();
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -55,7 +57,7 @@ public class ModelToMapTests {
 	@Test
 	void allProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().copy(Props.all());
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>().copy(Props.all());
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -71,7 +73,7 @@ public class ModelToMapTests {
 	@Test
 	void copyProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy(Props.props("username", "firstName", "lastName"))
 					.copy(Props.prop("username").<String, String>with(e -> e.toUpperCase()).to("user"));
 		Map<String, Object> data = mapper.map(emp1);
@@ -89,7 +91,7 @@ public class ModelToMapTests {
 	@Test
 	void excludeProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().copy(Props.except("department"));
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>().copy(Props.except("department"));
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -104,7 +106,7 @@ public class ModelToMapTests {
 	@Test
 	void addProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy(Props.props("firstName", "lastName"))
 					.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
 		Map<String, Object> data = mapper.map(emp1);
@@ -121,7 +123,7 @@ public class ModelToMapTests {
 	@Test
 	void copyNestedProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department.name").to("departmentName"));
 		Map<String, Object> data = mapper.map(emp1);
@@ -138,7 +140,7 @@ public class ModelToMapTests {
 	@Test
 	void joinNestedList() {
 
-		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
 				.copy(Props.except("employees"))
 					.copy(Props
 							.prop("employees")
@@ -160,11 +162,11 @@ public class ModelToMapTests {
 	@Test
 	void copyNestedEntiry() {
 
-		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
 				.copy(Props.props("id", "name"))
 					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department").with(departmentMapper));
 
@@ -189,7 +191,7 @@ public class ModelToMapTests {
 	@Test
 	void definition() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.with("{firstName,lastName,department{name,id}}");
 
 		Map<String, Object> data = mapper.map(emp1);
@@ -212,11 +214,11 @@ public class ModelToMapTests {
 	@Test
 	void definitionWithAdd() {
 
-		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
 				.with("{id,name}")
 					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department").with(departmentMapper));
 

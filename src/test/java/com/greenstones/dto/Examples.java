@@ -5,7 +5,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greenstones.dto.fields.SimpleMapper;
+import com.greenstones.dto.mappers.Mapper;
+import com.greenstones.dto.mappers.ModelToMapMapper;
 
 public class Examples {
 
@@ -31,10 +32,10 @@ public class Examples {
 		// circular dependency
 		dep.getEmployees().add(emp1);
 
-		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper.<Department>toMap().copy("id", "name");
-		Mapper<Employee, Map<String, Object>> employeeMapper = SimpleMapper
-				.<Employee>toMap()
-					.copyAll()
+		Mapper departmentMapper = Mapper.from("{id,name}");
+
+		ModelToMapMapper<Employee> employeeMapper = new ModelToMapMapper<Employee>()
+				.copyAll()
 					.copy(Props.prop("department").with(departmentMapper));
 
 		Map<String, Object> data = employeeMapper.map(emp1);
@@ -58,9 +59,8 @@ public class Examples {
 		// circular dependency
 		dep.getEmployees().add(emp1);
 
-		Mapper<Employee, Map<String, Object>> employeeMapper = SimpleMapper
-				.<Employee>toMap()
-					.copy("username", "firstName", "lastName")
+		ModelToMapMapper<Employee> employeeMapper = new ModelToMapMapper<Employee>()
+				.copy("username", "firstName", "lastName")
 					.copy(Props.prop("department.name").to("departmentName"));
 
 		Map<String, Object> data = employeeMapper.map(emp1);
@@ -80,21 +80,23 @@ public class Examples {
 		emp1.setLastName("Rees");
 		emp1.setDepartment(dep);
 
-		// Mapper for all properties except 'department'
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>toMap().except("department");
+		// create a generic mapper
+		Mapper mapper = Mapper.from("{username,firstName,lastName,department{id,name}}");
 
-		// Map an Employee to generic DTO
+		// map an Employee to a map
 		Map<String, Object> data = mapper.map(emp1);
-
-		// Print as JSON
 		print(data);
 
-		// copy only 'username' and add 'fullName'
-		mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy("username")
+		// create a generic mapper for all properties except 'department'
+		mapper = new Mapper().except("department");
+		data = mapper.map(emp1);
+		print(data);
+
+		// create a typed mapper and copy 'username' and add 'fullName'
+		ModelToMapMapper<Employee> entityMapper = new ModelToMapMapper<Employee>()
+				.copy("username")
 					.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
-		print(mapper.map(emp1));
+		print(entityMapper.map(emp1));
 
 	}
 

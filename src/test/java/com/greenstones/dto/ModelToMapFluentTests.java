@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.greenstones.dto.mappers.ModelToMapMapper;
+
 public class ModelToMapFluentTests {
 
 	private Department dep;
@@ -44,7 +46,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void noProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>();
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>();
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -55,7 +57,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void allProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().copyAll();
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>().copyAll();
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -71,7 +73,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void copyProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy("username", "firstName", "lastName")
 					.copy(Props.prop("username").<String, String>with(e -> e.toUpperCase()).to("user"));
 		Map<String, Object> data = mapper.map(emp1);
@@ -89,7 +91,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void excludeProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().except("department");
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>().except("department");
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -104,7 +106,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void addProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy("firstName", "lastName")
 					.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
 		Map<String, Object> data = mapper.map(emp1);
@@ -121,7 +123,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void copyNestedProps() {
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy("firstName", "lastName")
 					.copy(Props.prop("department.name").to("departmentName"));
 		Map<String, Object> data = mapper.map(emp1);
@@ -138,7 +140,7 @@ public class ModelToMapFluentTests {
 	@Test
 	void joinNestedList() {
 
-		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
 				.except("employees")
 					.copy(Props
 							.prop("employees")
@@ -160,11 +162,11 @@ public class ModelToMapFluentTests {
 	@Test
 	void copyNestedEntiry() {
 
-		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
 				.copy("id", "name")
 					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+		ModelToMapMapper<Employee> mapper = new ModelToMapMapper<Employee>()
 				.copy("firstName", "lastName")
 					.copy(Props.prop("department").with(departmentMapper));
 

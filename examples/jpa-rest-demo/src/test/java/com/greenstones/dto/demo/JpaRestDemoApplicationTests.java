@@ -27,7 +27,7 @@ class JpaRestDemoApplicationTests {
 					.andDo(print())
 					.andExpect(status().isOk())
 					.andExpect(content()
-							.json("[{\"name\":\"Sales\",\"employeeNames\":\"u1, u2\",\"id\":\"dep1\",\"employees\":[{\"firstName\":\"Adam\",\"lastName\":\"Rees\",\"username\":\"u1\"},{\"firstName\":\"Alison\",\"lastName\":\"Jones\",\"username\":\"u2\"}]}]"));
+							.json("[{\"name\":\"Sales\",\"id\":\"dep1\",\"employees\":[{\"firstName\":\"Adam\",\"lastName\":\"Rees\",\"username\":\"u1\"},{\"firstName\":\"Alison\",\"lastName\":\"Jones\",\"username\":\"u2\"}],\"employeeCount\":2}]"));
 	}
 
 	@Test

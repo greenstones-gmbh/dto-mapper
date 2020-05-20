@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.greenstones.dto.Mapper;
-import com.greenstones.dto.fields.SimpleMapper;
+import com.greenstones.dto.mappers.MapToModelMapper;
+import com.greenstones.dto.mappers.Mapper;
+import com.greenstones.dto.mappers.ModelToMapMapper;
 
 @RestController
 @Transactional
@@ -32,29 +33,25 @@ public class DemoController {
 
 	@GetMapping("/deps_with_mapper")
 	public Stream<Map<String, Object>> departments() {
-		Mapper<Employee, Map<String, Object>> empMapper = SimpleMapper.<Employee>toMap().except("department");
-		Mapper<Department, Map<String, Object>> depMapper = SimpleMapper
-				.<Department>toMap()
-					.copyAll()
-					.copy(prop("employees").with(empMapper))
-					.copy(prop("employees")
-							.to("employeeNames")
-								.<Employee, CharSequence>with(e -> e.getUsername())
-								.collector(Collectors.joining(", ")));
 
-		return departmentRepository.findAll().stream().map(depMapper::map);
+		ModelToMapMapper<Department> departmentMapper = new ModelToMapMapper<Department>()
+				.with("{id,name, employees{ username, firstName, lastName} }")
+					.copy(prop("employees").to("employeeCount").collector(Collectors.counting()));
+
+		return departmentRepository.findAll().stream().map(departmentMapper::map);
 	}
 
 	@PostMapping("/deps")
-	public Map<String, Object> create_dep(@RequestBody Map<String, Object> data) {
-		Mapper<Map<String, Object>, Department> mapToModel = SimpleMapper.mapTo(Department.class).copyAll();
+	public Map<String, Object> create_department(@RequestBody Map<String, Object> data) {
 
-		Department dep = mapToModel.map(data);
-		dep.setId("1");
+		MapToModelMapper<Department> mapToModel = new MapToModelMapper<Department>(Department.class).copyAll();
 
-		Mapper<Department, Map<String, Object>> modelToMap = SimpleMapper.<Department>toMap().copyAll();
+		Department department = mapToModel.map(data);
+		department.setId("1");
 
-		return modelToMap.map(dep);
+		// department=departmentRepository.save(department);
+
+		return Mapper.from("{id,name, employees{ username, firstName, lastName} }").map(department);
 	}
 
 }
