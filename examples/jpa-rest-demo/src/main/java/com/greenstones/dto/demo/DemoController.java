@@ -1,7 +1,5 @@
 package com.greenstones.dto.demo;
 
-import static com.greenstones.dto.Props.all;
-import static com.greenstones.dto.Props.except;
 import static com.greenstones.dto.Props.prop;
 
 import java.util.List;
@@ -34,35 +32,28 @@ public class DemoController {
 
 	@GetMapping("/deps_with_mapper")
 	public Stream<Map<String, Object>> departments() {
-		Mapper<Employee, Map<String, Object>> empMapper = SimpleMapper
-				.<Employee>modelToData()
-					.copy(except("department"))
-					.build();
+		Mapper<Employee, Map<String, Object>> empMapper = SimpleMapper.<Employee>toMap().except("department");
 		Mapper<Department, Map<String, Object>> depMapper = SimpleMapper
-				.<Department>modelToData()
-					.copy(all())
+				.<Department>toMap()
+					.copyAll()
 					.copy(prop("employees").with(empMapper))
 					.copy(prop("employees")
 							.to("employeeNames")
 								.<Employee, CharSequence>with(e -> e.getUsername())
-								.collector(Collectors.joining(", ")))
-					.build();
+								.collector(Collectors.joining(", ")));
 
 		return departmentRepository.findAll().stream().map(depMapper::map);
 	}
 
 	@PostMapping("/deps")
 	public Map<String, Object> create_dep(@RequestBody Map<String, Object> data) {
-		Mapper<Map<String, Object>,Department> mapToModel = SimpleMapper
-				.dataToModel(Department.class).copy(all()).build();
-		
-		Department dep=mapToModel.map(data);
+		Mapper<Map<String, Object>, Department> mapToModel = SimpleMapper.mapTo(Department.class).copyAll();
+
+		Department dep = mapToModel.map(data);
 		dep.setId("1");
-		
-		Mapper<Department, Map<String, Object>> modelToMap = SimpleMapper
-				.<Department>modelToData()
-					.copy(all()).build();
-		
+
+		Mapper<Department, Map<String, Object>> modelToMap = SimpleMapper.<Department>toMap().copyAll();
+
 		return modelToMap.map(dep);
 	}
 

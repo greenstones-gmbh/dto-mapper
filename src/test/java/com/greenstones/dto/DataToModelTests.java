@@ -28,9 +28,8 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 
 		Mapper<Data, Employee> mapper = Data
-				.dataToModel(Employee.class)
-					.copy(props("username", "firstName", "lastName"))
-					.build();
+				.dataTo(Employee.class)
+					.copy(props("username", "firstName", "lastName"));
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -39,7 +38,7 @@ public class DataToModelTests {
 		assertThat(emp.getLastName(), is("Rees"));
 		assertThat(emp.getDepartment(), nullValue());
 
-		mapper = Data.dataToModel(Employee.class).copy(props("firstName", "lastName")).build();
+		mapper = Data.dataTo(Employee.class).copy(props("firstName", "lastName"));
 		emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -59,7 +58,7 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper<Data, Employee> mapper = Data.dataToModel(Employee.class).copy(all()).build();
+		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all());
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -78,7 +77,7 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper<Data, Employee> mapper = Data.dataToModel(Employee.class).copy(except("username")).build();
+		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(except("username"));
 
 		Employee emp = mapper.map(data);
 
@@ -97,11 +96,10 @@ public class DataToModelTests {
 		data.put("fullName", "Adam Rees");
 
 		Mapper<Data, Employee> mapper = Data
-				.dataToModel(Employee.class)
+				.dataTo(Employee.class)
 					.copy(all())
 					.add("firstName", d -> d.get("fullName").toString().split(" ")[0])
-					.add("lastName", d -> d.get("fullName").toString().split(" ")[1])
-					.build();
+					.add("lastName", d -> d.get("fullName").toString().split(" ")[1]);
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -118,12 +116,12 @@ public class DataToModelTests {
 		data.put("username", "u1");
 		data.put("fullName", "Adam Rees");
 
-		Mapper<Data, Employee> mapper = Data.dataToModel(Employee.class).copy(all()).addMapping((d, emp) -> {
+		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all()).with((d, emp) -> {
 			String[] names = d.get("fullName").toString().split(" ");
 			emp.val().setFirstName(names[0]);
 			emp.val().setLastName(names[1]);
 
-		}).build();
+		});
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -147,7 +145,7 @@ public class DataToModelTests {
 		data.put("department", depData);
 
 		Mapper<Data, Employee> mapper = Data
-				.dataToModel(Employee.class)
+				.dataTo(Employee.class)
 					.copy(except("department"))
 					.copy(prop("department").with(d -> {
 						System.err.println(d);
@@ -156,8 +154,7 @@ public class DataToModelTests {
 						dep.setId((String) dd.get("id"));
 						dep.setName((String) dd.get("name"));
 						return dep;
-					}))
-					.build();
+					}));
 
 		Employee emp = mapper.map(data);
 
@@ -185,12 +182,11 @@ public class DataToModelTests {
 		data.put("lastName", "Rees");
 		data.put("department", depData);
 
-		Mapper<Data, Department> depMapper = Data.dataToModel(Department.class).copy(all()).build();
+		Mapper<Data, Department> depMapper = Data.dataTo(Department.class).copy(all());
 		Mapper<Data, Employee> mapper = Data
-				.dataToModel(Employee.class)
+				.dataTo(Employee.class)
 					.copy(except("department"))
-					.copy(prop("department").with(depMapper))
-					.build();
+					.copy(prop("department").with(depMapper));
 
 		Employee emp = mapper.map(data);
 
@@ -228,12 +224,11 @@ public class DataToModelTests {
 			((ArrayList<Data>) depData.get("employees")).add(data);
 		}
 
-		Mapper<Data, Employee> mapper = Data.dataToModel(Employee.class).copy(all()).build();
+		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all());
 		Mapper<Data, Department> depMapper = Data
-				.dataToModel(Department.class)
+				.dataTo(Department.class)
 					.copy(props("id", "name"))
-					.copy(prop("employees").with(mapper).collector(Collectors.toSet()))
-					.build();
+					.copy(prop("employees").with(mapper).collector(Collectors.toSet()));
 
 		Department dep = depMapper.map(depData);
 

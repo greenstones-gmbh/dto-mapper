@@ -46,20 +46,18 @@ public class Data implements Serializable {
 		props.remove(key);
 	}
 
-	public static <I> Mapper.Builder<I, Data> modelToData() {
+	public static <I> Mapper<I, Data> toData() {
 		Function<I, Source<I>> sourceFactory = in -> new BeanWrapper<I>(in);
 		Function<Data, Target<Data>> targetFactory = out -> new DataWrapper(out);
-
-		Mapper.Builder<I, Data> mapper = new Mapper.Builder<I, Data>(Data.class, sourceFactory, targetFactory);
+		Mapper<I, Data> mapper = new Mapper<I, Data>(Mapper.factory(Data.class), sourceFactory, targetFactory);
 		return mapper;
 
 	}
 
-	public static <O> Mapper.Builder<Data, O> dataToModel(Class<O> toType) {
+	public static <O> Mapper<Data, O> dataTo(Class<O> toType) {
 		Function<Data, Source<Data>> sourceFactory = in -> new DataWrapper(in);
 		Function<O, Target<O>> targetFactory = out -> new BeanWrapper<O>(out);
-
-		Mapper.Builder<Data, O> mapper = new Mapper.Builder<Data, O>(toType, sourceFactory, targetFactory);
+		Mapper<Data, O> mapper = new Mapper<Data, O>(Mapper.factory(toType), sourceFactory, targetFactory);
 		return mapper;
 	}
 

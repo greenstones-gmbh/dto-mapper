@@ -2,10 +2,14 @@ package com.greenstones.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.greenstones.dto.bean.BeanWrapper;
+import com.greenstones.dto.simple.Field;
+import com.greenstones.dto.simple.FieldParser;
+import com.greenstones.dto.simple.SimpleMapper;
 
 public class Mapper<I, O> {
 
@@ -26,6 +30,16 @@ public class Mapper<I, O> {
 
 	}
 
+	public Mapper(Supplier<O> instanceFactory, Function<I, Source<I>> sourceFactory,
+			Function<O, Target<O>> targetFactory) {
+		this(instanceFactory, new ArrayList<Mapping<I, O>>(), sourceFactory, targetFactory);
+	}
+
+	public Mapper(Supplier<O> instanceFactory) {
+		this(instanceFactory, new ArrayList<Mapping<I, O>>(), in -> new BeanWrapper<I>(in),
+				out -> new BeanWrapper<O>(out));
+	}
+
 	public O map(I in) {
 		O out = instanceFactory.get();
 		populate(in, out);
@@ -38,64 +52,66 @@ public class Mapper<I, O> {
 		mappings.forEach(r -> {
 			r.map(source, target);
 		});
+
 	}
 
-	public static class Builder<I, O> {
+	public Mapper<I, O> with(Mapping<I, O> mapping) {
+//		List<Mapping<I, O>> ms = new ArrayList<Mapping<I, O>>();
+//		ms.addAll(this.mappings);
+//		ms.add(mapping);
+//		return new Mapper<I, O>(instanceFactory, ms, sourceFactory, targetFactory);
+//		
+		mappings.add(mapping);
+		return this;
+	}
 
-		List<Mapping<I, O>> mappings = new ArrayList<Mapping<I, O>>();
+	// builders
 
-		Supplier<O> instanceFactory;
-		Function<I, Source<I>> sourceFactory;
-		Function<O, Target<O>> targetFactory;
+	public <V> Mapper<I, O> add(String prop, Function<I, V> transform) {
+		Mapping<I, O> reducer = (in, out) -> {
+			V ip = transform.apply(in.val());
+			out.set(prop, ip);
+		};
+		return with(reducer);
+	}
 
-		public Builder(Class<O> type, Function<I, Source<I>> sourceFactory, Function<O, Target<O>> targetFactory) {
-			this(() -> {
-				try {
-					return type.newInstance();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}, sourceFactory, targetFactory);
-		}
+	public <IP, OP> Mapper<I, O> copy(PropertySelector<IP, OP> propSelector) {
+		return with(Props.copy(propSelector));
+	}
 
-		public Builder(Supplier<O> instanceFactory, Function<I, Source<I>> sourceFactory,
-				Function<O, Target<O>> targetFactory) {
-			super();
-			this.instanceFactory = instanceFactory;
-			this.sourceFactory = sourceFactory;
-			this.targetFactory = targetFactory;
+	// fluent api
+	public <IP, OP> Mapper<I, O> copyAll() {
+		return with(Props.copy(Props.all()));
+	}
 
-		}
+	public <IP, OP> Mapper<I, O> except(String... props) {
+		return with(Props.copy(Props.except(props)));
+	}
 
-		public Mapper.Builder<I, O> addMapping(Mapping<I, O> mapping) {
-			mappings.add(mapping);
-			return this;
-		}
+	public <IP, OP> Mapper<I, O> copy(String... props) {
+		return with(Props.copy(Props.props(props)));
+	}
 
-		public <V> Mapper.Builder<I, O> add(String prop, Function<I, V> transform) {
-			Mapping<I, O> reducer = (in, out) -> {
-				V ip = transform.apply(in.val());
-				out.set(prop, ip);
-			};
-			addMapping(reducer);
-			return this;
-		}
+	public <IP, OP> Mapper<I, O> copy(String prop) {
+		return with(Props.copy(Props.prop(prop)));
+	}
 
-		public <IP, OP> Mapper.Builder<I, O> copy(PropertySelector<IP, OP> propSelector) {
-			return addMapping(Props.copy(propSelector));
-		}
+	public <IP, OP> Mapper<I, O> with(String def) {
+		List<Field> fields = FieldParser.parse(def);
+		Field.addMappings(this, fields);
+		return this;
+	}
 
-		public Mapper<I, O> build() {
-			return new Mapper<I, O>(instanceFactory, mappings, sourceFactory, targetFactory);
-		}
+	// helpers
 
-		public static <I, O> Mapper.Builder<I, O> mapper(Class<I> fromType, Class<O> toType) {
-			Function<I, Source<I>> sourceFactory = in -> new BeanWrapper<I>(in);
-			Function<O, Target<O>> targetFactory = out -> new BeanWrapper<O>(out);
-			Mapper.Builder<I, O> mapper = new Mapper.Builder<I, O>(toType, sourceFactory, targetFactory);
-			return mapper;
-		}
-
+	public static <E> Supplier<E> factory(Class<E> type) {
+		return () -> {
+			try {
+				return type.newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
 	}
 
 }

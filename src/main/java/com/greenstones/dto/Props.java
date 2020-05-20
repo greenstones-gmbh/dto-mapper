@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import com.greenstones.dto.PropertyMapping.SinglePropertySelector;
+import com.greenstones.dto.simple.Field;
 
 public class Props {
 
@@ -71,4 +72,7 @@ public class Props {
 
 	}
 
+	
+
+	
 }

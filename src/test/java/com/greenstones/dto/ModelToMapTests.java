@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.greenstones.dto.Mapper.Builder;
 import com.greenstones.dto.simple.SimpleMapper;
 
 public class ModelToMapTests {
@@ -47,7 +46,7 @@ public class ModelToMapTests {
 	@Test
 	void noProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>modelToData().build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>toMap();
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -55,14 +54,10 @@ public class ModelToMapTests {
 
 	}
 
-	private Builder<Employee, Map<String, Object>> builder() {
-		return SimpleMapper.<Employee>modelToData();
-	}
-
 	@Test
 	void allProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = builder().copy(Props.all()).build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>toMap().copy(Props.all());
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -78,10 +73,10 @@ public class ModelToMapTests {
 	@Test
 	void copyProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = builder()
-				.copy(Props.props("username", "firstName", "lastName"))
-					.copy(Props.prop("username").<String, String>with(e -> e.toUpperCase()).to("user"))
-					.build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.props("username", "firstName", "lastName"))
+					.copy(Props.prop("username").<String, String>with(e -> e.toUpperCase()).to("user"));
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -97,7 +92,9 @@ public class ModelToMapTests {
 	@Test
 	void excludeProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = builder().copy(Props.except("department")).build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.except("department"));
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -112,10 +109,10 @@ public class ModelToMapTests {
 	@Test
 	void addProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = builder()
-				.copy(Props.props("firstName", "lastName"))
-					.add("fullName", e -> e.getFirstName() + " " + e.getLastName())
-					.build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.props("firstName", "lastName"))
+					.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -130,10 +127,10 @@ public class ModelToMapTests {
 	@Test
 	void copyNestedProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = builder()
-				.copy(Props.props("firstName", "lastName"))
-					.copy(Props.prop("department.name").to("departmentName"))
-					.build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.props("firstName", "lastName"))
+					.copy(Props.prop("department.name").to("departmentName"));
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -149,14 +146,13 @@ public class ModelToMapTests {
 	void joinNestedList() {
 
 		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
-				.<Department>modelToData()
+				.<Department>toMap()
 					.copy(Props.except("employees"))
 					.copy(Props
 							.prop("employees")
 								.to("employeeNames")
 								.<Employee, CharSequence>with(a -> a.getUsername())
-								.collector(Collectors.joining(", ")))
-					.build();
+								.collector(Collectors.joining(", ")));
 
 		Map<String, Object> data = departmentMapper.map(dep);
 
@@ -173,15 +169,68 @@ public class ModelToMapTests {
 	void copyNestedEntiry() {
 
 		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
-				.<Department>modelToData()
+				.<Department>toMap()
 					.copy(Props.props("id", "name"))
-					.add("employeesCount", d -> d.getEmployees().size())
-					.build();
+					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper<Employee, Map<String, Object>> mapper = builder()
-				.copy(Props.props("firstName", "lastName"))
-					.copy(Props.prop("department").with(departmentMapper))
-					.build();
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.props("firstName", "lastName"))
+					.copy(Props.prop("department").with(departmentMapper));
+
+		Map<String, Object> data = mapper.map(emp1);
+
+		assertThat(data, notNullValue());
+		assertThat(data.keySet(), containsInAnyOrder("department", "firstName", "lastName"));
+
+		assertThat(data.get("firstName"), is("Adam"));
+		assertThat(data.get("lastName"), is("Rees"));
+
+		assertThat(data.get("department"), notNullValue());
+		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
+		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name", "employeesCount"));
+		assertThat(departmentData.get("id"), is("dep1"));
+		assertThat(departmentData.get("name"), is("Sales"));
+		assertThat(departmentData.get("employeesCount"), is(2));
+
+	}
+	
+	@Test
+	void definition() {
+
+
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap().with("{firstName,lastName,department{name,id}}");
+					
+
+		Map<String, Object> data = mapper.map(emp1);
+
+		assertThat(data, notNullValue());
+		assertThat(data.keySet(), containsInAnyOrder("department", "firstName", "lastName"));
+
+		assertThat(data.get("firstName"), is("Adam"));
+		assertThat(data.get("lastName"), is("Rees"));
+
+		assertThat(data.get("department"), notNullValue());
+		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
+		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name"));
+		assertThat(departmentData.get("id"), is("dep1"));
+		assertThat(departmentData.get("name"), is("Sales"));
+		
+	}
+	
+	
+	@Test
+	void definitionWithAdd() {
+
+		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
+				.<Department>toMap().with("{id,name}")
+					.add("employeesCount", d -> d.getEmployees().size());
+
+		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
+				.<Employee>toMap()
+					.copy(Props.props("firstName", "lastName"))
+					.copy(Props.prop("department").with(departmentMapper));
 
 		Map<String, Object> data = mapper.map(emp1);
 
