@@ -250,7 +250,7 @@ public class DemoController {
 
 		return Mapper.from("{id,name, employees{ username, firstName, lastName} }").map(department);
 	}
-
+0.5-SNAPSHOT
 }
 
 ```
@@ -305,6 +305,6 @@ Output `/deps_with_mapper` :
 <dependency>
 	<groupId>com.greenstones.dto</groupId>
 	<artifactId>dto-mapper</artifactId>
-	<version>0.1</version>
+	<version>0.5-SNAPSHOT</version>
 </dependency>
 ```
