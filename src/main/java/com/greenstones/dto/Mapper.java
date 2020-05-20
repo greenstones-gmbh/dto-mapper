@@ -2,14 +2,12 @@ package com.greenstones.dto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.greenstones.dto.bean.BeanWrapper;
 import com.greenstones.dto.simple.Field;
 import com.greenstones.dto.simple.FieldParser;
-import com.greenstones.dto.simple.SimpleMapper;
 
 public class Mapper<I, O> {
 
