@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.greenstones.dto.simple.SimpleMapper;
-
 public class ModelToMapTests {
 
 	private Department dep;
@@ -46,7 +44,7 @@ public class ModelToMapTests {
 	@Test
 	void noProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>toMap();
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>();
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -57,7 +55,7 @@ public class ModelToMapTests {
 	@Test
 	void allProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper.<Employee>toMap().copy(Props.all());
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().copy(Props.all());
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -73,9 +71,8 @@ public class ModelToMapTests {
 	@Test
 	void copyProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.props("username", "firstName", "lastName"))
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.copy(Props.props("username", "firstName", "lastName"))
 					.copy(Props.prop("username").<String, String>with(e -> e.toUpperCase()).to("user"));
 		Map<String, Object> data = mapper.map(emp1);
 
@@ -92,9 +89,7 @@ public class ModelToMapTests {
 	@Test
 	void excludeProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.except("department"));
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>().copy(Props.except("department"));
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
@@ -109,9 +104,8 @@ public class ModelToMapTests {
 	@Test
 	void addProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.props("firstName", "lastName"))
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.copy(Props.props("firstName", "lastName"))
 					.add("fullName", e -> e.getFirstName() + " " + e.getLastName());
 		Map<String, Object> data = mapper.map(emp1);
 
@@ -127,9 +121,8 @@ public class ModelToMapTests {
 	@Test
 	void copyNestedProps() {
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.props("firstName", "lastName"))
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department.name").to("departmentName"));
 		Map<String, Object> data = mapper.map(emp1);
 
@@ -145,9 +138,8 @@ public class ModelToMapTests {
 	@Test
 	void joinNestedList() {
 
-		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
-				.<Department>toMap()
-					.copy(Props.except("employees"))
+		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+				.copy(Props.except("employees"))
 					.copy(Props
 							.prop("employees")
 								.to("employeeNames")
@@ -168,14 +160,12 @@ public class ModelToMapTests {
 	@Test
 	void copyNestedEntiry() {
 
-		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
-				.<Department>toMap()
-					.copy(Props.props("id", "name"))
+		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+				.copy(Props.props("id", "name"))
 					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.props("firstName", "lastName"))
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department").with(departmentMapper));
 
 		Map<String, Object> data = mapper.map(emp1);
@@ -187,6 +177,7 @@ public class ModelToMapTests {
 		assertThat(data.get("lastName"), is("Rees"));
 
 		assertThat(data.get("department"), notNullValue());
+		@SuppressWarnings("unchecked")
 		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
 		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name", "employeesCount"));
 		assertThat(departmentData.get("id"), is("dep1"));
@@ -194,14 +185,12 @@ public class ModelToMapTests {
 		assertThat(departmentData.get("employeesCount"), is(2));
 
 	}
-	
+
 	@Test
 	void definition() {
 
-
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap().with("{firstName,lastName,department{name,id}}");
-					
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.with("{firstName,lastName,department{name,id}}");
 
 		Map<String, Object> data = mapper.map(emp1);
 
@@ -212,24 +201,23 @@ public class ModelToMapTests {
 		assertThat(data.get("lastName"), is("Rees"));
 
 		assertThat(data.get("department"), notNullValue());
+		@SuppressWarnings("unchecked")
 		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
 		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name"));
 		assertThat(departmentData.get("id"), is("dep1"));
 		assertThat(departmentData.get("name"), is("Sales"));
-		
+
 	}
-	
-	
+
 	@Test
 	void definitionWithAdd() {
 
-		Mapper<Department, Map<String, Object>> departmentMapper = SimpleMapper
-				.<Department>toMap().with("{id,name}")
+		Mapper.ModelToMap<Department> departmentMapper = new Mapper.ModelToMap<Department>()
+				.with("{id,name}")
 					.add("employeesCount", d -> d.getEmployees().size());
 
-		Mapper<Employee, Map<String, Object>> mapper = SimpleMapper
-				.<Employee>toMap()
-					.copy(Props.props("firstName", "lastName"))
+		Mapper.ModelToMap<Employee> mapper = new Mapper.ModelToMap<Employee>()
+				.copy(Props.props("firstName", "lastName"))
 					.copy(Props.prop("department").with(departmentMapper));
 
 		Map<String, Object> data = mapper.map(emp1);
@@ -241,6 +229,7 @@ public class ModelToMapTests {
 		assertThat(data.get("lastName"), is("Rees"));
 
 		assertThat(data.get("department"), notNullValue());
+		@SuppressWarnings("unchecked")
 		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
 		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name", "employeesCount"));
 		assertThat(departmentData.get("id"), is("dep1"));

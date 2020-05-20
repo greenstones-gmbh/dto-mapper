@@ -10,26 +10,25 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-
-import com.greenstones.dto.data.Data;
 
 public class DataToModelTests {
 
 	@Test
 	void copy() {
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 
-		Mapper<Data, Employee> mapper = Data
-				.dataTo(Employee.class)
-					.copy(props("username", "firstName", "lastName"));
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+				.copy(props("username", "firstName", "lastName"));
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -38,7 +37,7 @@ public class DataToModelTests {
 		assertThat(emp.getLastName(), is("Rees"));
 		assertThat(emp.getDepartment(), nullValue());
 
-		mapper = Data.dataTo(Employee.class).copy(props("firstName", "lastName"));
+		mapper = new Mapper.MapToModel<>(Employee.class).copy(props("firstName", "lastName"));
 		emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -52,13 +51,13 @@ public class DataToModelTests {
 	@Test
 	void copyAll() {
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all());
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all());
 		Employee emp = mapper.map(data);
 
 		assertThat(emp, notNullValue());
@@ -71,13 +70,13 @@ public class DataToModelTests {
 	@Test
 	void exclude() {
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 		data.put("propNotExists", "Rees1");
 
-		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(except("username"));
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(except("username"));
 
 		Employee emp = mapper.map(data);
 
@@ -91,13 +90,12 @@ public class DataToModelTests {
 	@Test
 	void add() {
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("fullName", "Adam Rees");
 
-		Mapper<Data, Employee> mapper = Data
-				.dataTo(Employee.class)
-					.copy(all())
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+				.copy(all())
 					.add("firstName", d -> d.get("fullName").toString().split(" ")[0])
 					.add("lastName", d -> d.get("fullName").toString().split(" ")[1]);
 		Employee emp = mapper.map(data);
@@ -112,11 +110,11 @@ public class DataToModelTests {
 	@Test
 	void reducer() {
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("fullName", "Adam Rees");
 
-		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all()).with((d, emp) -> {
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all()).with((d, emp) -> {
 			String[] names = d.get("fullName").toString().split(" ");
 			emp.val().setFirstName(names[0]);
 			emp.val().setLastName(names[1]);
@@ -134,23 +132,21 @@ public class DataToModelTests {
 	@Test
 	void nested() {
 
-		Data depData = new Data();
+		Map<String, Object> depData = new HashMap<String, Object>();
 		depData.put("id", "dep1");
 		depData.put("name", "Sales");
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 		data.put("department", depData);
 
-		Mapper<Data, Employee> mapper = Data
-				.dataTo(Employee.class)
-					.copy(except("department"))
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+				.copy(except("department"))
 					.copy(prop("department").with(d -> {
-						System.err.println(d);
 						Department dep = new Department();
-						Data dd = (Data) d;
+						Map<String, Object> dd = (Map<String, Object>) d;
 						dep.setId((String) dd.get("id"));
 						dep.setName((String) dd.get("name"));
 						return dep;
@@ -172,20 +168,19 @@ public class DataToModelTests {
 	@Test
 	void nestedMapper() {
 
-		Data depData = new Data();
+		Map<String, Object> depData = new HashMap<String, Object>();
 		depData.put("id", "dep1");
 		depData.put("name", "Sales");
 
-		Data data = new Data();
+		Map<String, Object> data = new HashMap<>();
 		data.put("username", "u1");
 		data.put("firstName", "Adam");
 		data.put("lastName", "Rees");
 		data.put("department", depData);
 
-		Mapper<Data, Department> depMapper = Data.dataTo(Department.class).copy(all());
-		Mapper<Data, Employee> mapper = Data
-				.dataTo(Employee.class)
-					.copy(except("department"))
+		Mapper.MapToModel<Department> depMapper = new Mapper.MapToModel<>(Department.class).copy(all());
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class)
+				.copy(except("department"))
 					.copy(prop("department").with(depMapper));
 
 		Employee emp = mapper.map(data);
@@ -205,29 +200,28 @@ public class DataToModelTests {
 	@Test
 	void nestedListMapper() {
 
-		Data depData = new Data();
+		Map<String, Object> depData = new HashMap<String, Object>();
 		depData.put("id", "dep1");
 		depData.put("name", "Sales");
-		depData.put("employees", new ArrayList<Data>());
+		depData.put("employees", new ArrayList<Map<String, Object>>());
 		{
-			Data data = new Data();
+			Map<String, Object> data = new HashMap<>();
 			data.put("username", "u1");
 			data.put("firstName", "Adam");
 			data.put("lastName", "Rees");
-			((ArrayList<Data>) depData.get("employees")).add(data);
+			((ArrayList<Map<String, Object>>) depData.get("employees")).add(data);
 		}
 		{
-			Data data = new Data();
+			Map<String, Object> data = new HashMap<>();
 			data.put("username", "u2");
 			data.put("firstName", "Alison");
 			data.put("lastName", "Jones");
-			((ArrayList<Data>) depData.get("employees")).add(data);
+			((ArrayList<Map<String, Object>>) depData.get("employees")).add(data);
 		}
 
-		Mapper<Data, Employee> mapper = Data.dataTo(Employee.class).copy(all());
-		Mapper<Data, Department> depMapper = Data
-				.dataTo(Department.class)
-					.copy(props("id", "name"))
+		Mapper.MapToModel<Employee> mapper = new Mapper.MapToModel<>(Employee.class).copy(all());
+		Mapper.MapToModel<Department> depMapper = new Mapper.MapToModel<>(Department.class)
+				.copy(props("id", "name"))
 					.copy(prop("employees").with(mapper).collector(Collectors.toSet()));
 
 		Department dep = depMapper.map(depData);

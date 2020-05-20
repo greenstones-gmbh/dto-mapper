@@ -45,7 +45,7 @@ public class Field {
 			if (f.fields.isEmpty())
 				mapper.copy(f.name);
 			else {
-				Mapper<Object, Map<String, Object>> m = SimpleMapper.<Object>toMap();
+				Mapper<Object, Map<String, Object>> m = new Mapper.Simple();
 				addMappings(m, f.fields);
 				mapper.copy(Props.prop(f.name).with(m));
 			}

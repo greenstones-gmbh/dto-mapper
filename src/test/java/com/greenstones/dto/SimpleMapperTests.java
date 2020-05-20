@@ -3,17 +3,13 @@ package com.greenstones.dto;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.greenstones.dto.simple.SimpleMapper;
 
 public class SimpleMapperTests {
 
@@ -46,25 +42,23 @@ public class SimpleMapperTests {
 	@Test
 	void noProps() {
 
-		Mapper<Object, Map<String, Object>> mapper = SimpleMapper
-				.with("{ username, firstName, lastName, department { id, name }}");
+		Mapper.Simple mapper = Mapper.from("{ username, firstName, lastName, department { id, name }}");
 		Map<String, Object> data = mapper.map(emp1);
 
 		assertThat(data, notNullValue());
-		
-		
-		assertThat(data.keySet(), containsInAnyOrder("department", "firstName", "lastName","username"));
+
+		assertThat(data.keySet(), containsInAnyOrder("department", "firstName", "lastName", "username"));
 
 		assertThat(data.get("firstName"), is("Adam"));
 		assertThat(data.get("lastName"), is("Rees"));
 		assertThat(data.get("username"), is("u1"));
 
 		assertThat(data.get("department"), notNullValue());
+		@SuppressWarnings("unchecked")
 		Map<String, Object> departmentData = (Map<String, Object>) data.get("department");
 		assertThat(departmentData.keySet(), containsInAnyOrder("id", "name"));
 		assertThat(departmentData.get("id"), is("dep1"));
 		assertThat(departmentData.get("name"), is("Sales"));
-		
 
 	}
 

@@ -1,13 +1,16 @@
 package com.greenstones.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.greenstones.dto.bean.BeanWrapper;
 import com.greenstones.dto.simple.Field;
 import com.greenstones.dto.simple.FieldParser;
+import com.greenstones.dto.simple.MapWrapper;
 
 public class Mapper<I, O> {
 
@@ -53,19 +56,15 @@ public class Mapper<I, O> {
 
 	}
 
-	public Mapper<I, O> with(Mapping<I, O> mapping) {
-//		List<Mapping<I, O>> ms = new ArrayList<Mapping<I, O>>();
-//		ms.addAll(this.mappings);
-//		ms.add(mapping);
-//		return new Mapper<I, O>(instanceFactory, ms, sourceFactory, targetFactory);
-//		
+	@SuppressWarnings("unchecked")
+	public <R extends Mapper<I, O>> R with(Mapping<I, O> mapping) {
 		mappings.add(mapping);
-		return this;
+		return (R) this;
 	}
 
 	// builders
 
-	public <V> Mapper<I, O> add(String prop, Function<I, V> transform) {
+	public <V, R extends Mapper<I, O>> R add(String prop, Function<I, V> transform) {
 		Mapping<I, O> reducer = (in, out) -> {
 			V ip = transform.apply(in.val());
 			out.set(prop, ip);
@@ -73,31 +72,32 @@ public class Mapper<I, O> {
 		return with(reducer);
 	}
 
-	public <IP, OP> Mapper<I, O> copy(PropertySelector<IP, OP> propSelector) {
+	public <IP, OP, R extends Mapper<I, O>> R copy(PropertySelector<IP, OP> propSelector) {
 		return with(Props.copy(propSelector));
 	}
 
 	// fluent api
-	public <IP, OP> Mapper<I, O> copyAll() {
+	public <R extends Mapper<I, O>> R copyAll() {
 		return with(Props.copy(Props.all()));
 	}
 
-	public <IP, OP> Mapper<I, O> except(String... props) {
+	public <R extends Mapper<I, O>> R except(String... props) {
 		return with(Props.copy(Props.except(props)));
 	}
 
-	public <IP, OP> Mapper<I, O> copy(String... props) {
+	public <R extends Mapper<I, O>> R copy(String... props) {
 		return with(Props.copy(Props.props(props)));
 	}
 
-	public <IP, OP> Mapper<I, O> copy(String prop) {
+	public <R extends Mapper<I, O>> R copy(String prop) {
 		return with(Props.copy(Props.prop(prop)));
 	}
 
-	public <IP, OP> Mapper<I, O> with(String def) {
+	@SuppressWarnings("unchecked")
+	public <R extends Mapper<I, O>> R with(String def) {
 		List<Field> fields = FieldParser.parse(def);
 		Field.addMappings(this, fields);
-		return this;
+		return (R) this;
 	}
 
 	// helpers
@@ -110,6 +110,33 @@ public class Mapper<I, O> {
 				throw new RuntimeException(e);
 			}
 		};
+	}
+
+	// mappers
+
+	public static class ModelToMap<E> extends Mapper<E, Map<String, Object>> {
+
+		public ModelToMap() {
+			super(HashMap<String, Object>::new, in -> new BeanWrapper<E>(in), out -> new MapWrapper(out));
+		}
+	}
+
+	public static class MapToModel<E> extends Mapper<Map<String, Object>, E> {
+
+		public MapToModel(Class<E> type) {
+			super(factory(type), in -> new MapWrapper(in), out -> new BeanWrapper<E>(out));
+		}
+
+	}
+
+	public static class Simple extends ModelToMap<Object> {
+		public Simple() {
+			super();
+		}
+	}
+
+	public static Mapper.Simple from(String def) {
+		return new Simple().with(def);
 	}
 
 }
