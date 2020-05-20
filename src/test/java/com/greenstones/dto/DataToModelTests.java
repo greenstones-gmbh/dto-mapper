@@ -225,7 +225,7 @@ public class DataToModelTests {
 		MapToModelMapper<Employee> mapper = new MapToModelMapper<>(Employee.class).copy(all());
 		MapToModelMapper<Department> depMapper = new MapToModelMapper<>(Department.class)
 				.copy(props("id", "name"))
-					.copy(prop("employees").with(mapper).collector(Collectors.toSet()));
+					.copy(prop("employees").with(mapper).collector(Collectors.toList()));
 
 		Department dep = depMapper.map(depData);
 
