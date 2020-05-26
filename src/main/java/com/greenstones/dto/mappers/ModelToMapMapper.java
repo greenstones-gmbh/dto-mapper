@@ -12,4 +12,10 @@ public class ModelToMapMapper<E> extends ModelMapper<E, Map<String, Object>> {
 	public ModelToMapMapper() {
 		super(HashMap<String, Object>::new, in -> new BeanWrapper<E>(in), out -> new MapWrapper(out));
 	}
+	
+	public ModelToMapMapper(String def) {
+		this();
+		with(def);
+	}
+	
 }
