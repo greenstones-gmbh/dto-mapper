@@ -2,8 +2,10 @@ package com.greenstones.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.greenstones.dto.fields.Field;
 import com.greenstones.dto.fields.FieldParser;
@@ -39,9 +41,15 @@ public class ModelMapper<I, O> {
 	}
 
 	public O map(I in) {
+		if (in == null)
+			return null;
 		O out = instanceFactory.get();
 		populate(in, out);
 		return out;
+	}
+
+	public List<? extends O> mapList(List<? extends I> in) {
+		return in.stream().map(this::map).collect(Collectors.toList());
 	}
 
 	protected void populate(I in, O out) {
@@ -108,7 +116,5 @@ public class ModelMapper<I, O> {
 			}
 		};
 	}
-
-	
 
 }
