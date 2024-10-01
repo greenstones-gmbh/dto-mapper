@@ -299,7 +299,7 @@ Output `/deps_with_mapper` :
 ```
 
 
-## Setup
+## Setup maven
 
 ```xml
 <dependency>
