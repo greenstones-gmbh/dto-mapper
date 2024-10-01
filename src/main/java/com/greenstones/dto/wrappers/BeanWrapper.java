@@ -31,7 +31,6 @@ public class BeanWrapper<E> implements Source<E>, Target<E> {
 
 	@Override
 	public Object get(String prop) {
-
 		try {
 			return bw.getPropertyValue(prop);
 		} catch (NotReadablePropertyException e) {
